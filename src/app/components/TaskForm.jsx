@@ -9,9 +9,8 @@ import {
   useGetTasksQuery,
   useCheckDependencyCircularityMutation,
 } from "../store/taskSlice";
-import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileEdit, AlertTriangle, X, Info } from "lucide-react"; // Added AlertTriangle and Info icons
+import { ArrowLeft, FileEdit, AlertTriangle, X, Info } from "lucide-react";
 
 // Enhanced schema with dependency validation
 const taskSchema = yup.object().shape({
@@ -51,7 +50,15 @@ export default function TaskForm({ task }) {
   // Get user information from Redux store
   // const { currentUser } = useSelector((state) => state.auth);
   // Retrieve user data from localStorage
-  const storedUser = localStorage.getItem("user"); // Get string from localStorage
+  const [storedUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("user");
+      setCurrentUser(storedUser ? JSON.parse(storedUser) : null);
+    }
+  }, []);
+  // const storedUser = localStorage?.getItem("user"); // Get string from localStorage
   const getUser = storedUser ? JSON.parse(storedUser) : null; // Parse if exists
   // console.log("getUser", getUser);
   // Mock currentUser (fallback if getUser is null)
@@ -429,29 +436,29 @@ export default function TaskForm({ task }) {
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
                       </div>
                     ) : availableDependencyTasks?.length > 0 ? (
-                      availableDependencyTasks.map((t) => (
+                      availableDependencyTasks?.map((t) => (
                         <div
-                          key={t._id}
+                          key={t?._id}
                           className="flex items-center gap-2 p-2 hover:bg-white rounded-md transition-colors"
                         >
                           <input
                             type="checkbox"
-                            id={`dep-${t._id}`}
+                            id={`dep-${t?._id}`}
                             className="w-4 h-4 accent-indigo-500"
-                            checked={selectedDeps.includes(t._id)}
-                            onChange={() => handleDependencyChange(t._id)}
-                            disabled={isSubmitting || t.status === "completed"}
+                            checked={selectedDeps.includes(t?._id)}
+                            onChange={() => handleDependencyChange(t?._id)}
+                            disabled={isSubmitting || t?.status === "completed"}
                           />
                           <label
-                            htmlFor={`dep-${t._id}`}
+                            htmlFor={`dep-${t?._id}`}
                             className={`text-sm cursor-pointer flex-grow ${
-                              t.status === "completed"
+                              t?.status === "completed"
                                 ? "text-gray-400 line-through"
                                 : ""
                             }`}
                           >
-                            {t.title}
-                            {t.status === "completed" && " (Completed)"}
+                            {t?.title}
+                            {t?.status === "completed" && " (Completed)"}
                           </label>
                         </div>
                       ))

@@ -475,7 +475,7 @@ export default function TaskListPage() {
                                     .slice(0, 2)
                                     .map((dep, idx) => (
                                       <span
-                                        key={dep._id || idx}
+                                        key={dep?._id || idx}
                                         className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
                                       >
                                         {dep?.title || `Task ${idx + 1}`}
