@@ -171,7 +171,7 @@ export default function TaskForm({ task }) {
       data.dependencies = selectedDeps;
 
       // Ensure tenant_id is included
-      data?.tenant_id = currentTenantId;
+      data.tenant_id = currentTenantId;
 
       if (task) {
         await updateTask({ id: task?._id, ...data }).unwrap();
