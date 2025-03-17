@@ -50,14 +50,14 @@ export default function TaskForm({ task }) {
   // Get user information from Redux store
   // const { currentUser } = useSelector((state) => state.auth);
   // Retrieve user data from localStorage
-  const [storedUser, setCurrentUser] = useState(null);
+  // const [storedUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user");
-      setCurrentUser(storedUser ? JSON.parse(storedUser) : null);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  const storedUser = localStorage.getItem("user");
+  //     setCurrentUser(storedUser ? JSON.parse(storedUser) : null);
+  //   }
+  // }, []);
   // const storedUser = localStorage?.getItem("user"); // Get string from localStorage
   const getUser = storedUser ? JSON.parse(storedUser) : null; // Parse if exists
   // console.log("getUser", getUser);
