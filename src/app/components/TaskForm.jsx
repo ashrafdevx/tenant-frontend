@@ -11,6 +11,7 @@ import {
 } from "../store/taskSlice";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, FileEdit, AlertTriangle, X, Info } from "lucide-react";
+import { getAuthToken } from "../utils/token";
 
 // Enhanced schema with dependency validation
 const taskSchema = yup.object().shape({
@@ -54,7 +55,9 @@ export default function TaskForm({ task }) {
 
   // useEffect(() => {
   //   if (typeof window !== "undefined") {
-  const storedUser = localStorage.getItem("user");
+  // const storedUser = localStorage.getItem("user");
+  const storedUser = getAuthToken();
+  console.log("token", storedUser);
   //     setCurrentUser(storedUser ? JSON.parse(storedUser) : null);
   //   }
   // }, []);
