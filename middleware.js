@@ -1,32 +1,44 @@
+// middleware.js
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
-  const { pathname } = req.nextUrl;
-  const token = req.cookies.get("token")?.value || null;
+export function middleware(request) {
+  // Get the pathname of the request
+  const { pathname } = request.nextUrl;
 
-  const isAuthRoute = pathname === "/login" || pathname === "/register";
-  const isProtectedRoute = ["/tasks", "/profile", "/dashboard"].includes(
-    pathname
+  // Define protected routes that require authentication
+  const protectedRoutes = ["/tasks", "/profile", "/dashboard"];
+
+  // Check if the requested path is a protected route
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
   );
 
-  // If token exists & user tries to access login/register, redirect to tasks page
-  if (token && isAuthRoute) {
-    return NextResponse.redirect(new URL("/tasks", req.nextUrl));
+  // Get token from cookies (not localStorage, as middleware runs on server)
+  const token = request.cookies.get("token")?.value;
+
+  // If trying to access a protected route without a token, redirect to login
+  if (isProtectedRoute && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // If token is missing & user tries to access protected pages, redirect to login
-  if (!token && isProtectedRoute) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+  // If already logged in (has token) and trying to access login page, redirect to tasks
+  if (pathname === "/login" && token) {
+    return NextResponse.redirect(new URL("/tasks", request.url));
   }
 
-  // Redirect unknown routes to a 404 page
-  if (!isAuthRoute && !isProtectedRoute && pathname !== "/") {
-    return NextResponse.redirect(new URL("/404", req.nextUrl));
-  }
-
+  // Allow the request to continue
   return NextResponse.next();
 }
 
+// Configure which routes this middleware applies to
 export const config = {
-  matcher: ["/tasks", "/profile", "/dashboard", "/login", "/register", "/404"],
+  matcher: [
+    // Protected routes
+    "/tasks/:path*",
+    "/profile/:path*",
+    "/dashboard/:path*",
+    // Auth routes
+    "/login",
+    "/register",
+  ],
 };

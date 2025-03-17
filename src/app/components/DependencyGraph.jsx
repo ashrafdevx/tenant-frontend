@@ -73,8 +73,8 @@ export default function DependencyGraph({ tasks }) {
     }));
 
     const links = tasks
-      .flatMap((task) =>
-        (task.dependencies || []).map((dep) => ({
+      ?.flatMap((task) =>
+        (task.dependencies || [])?.map((dep) => ({
           source: dep._id || "", // The dependency is the source
           target: task._id, // The current task is the target (depends on source)
         }))
