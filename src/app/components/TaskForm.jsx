@@ -78,7 +78,7 @@ export default function TaskForm({ task }) {
 
   // Filter tasks for dependency selection - can't depend on itself or completed tasks
   const availableDependencyTasks =
-    allTasks?.filter((t) => !task || t._id !== task._id) || [];
+    allTasks?.filter((t) => !task || t?._id !== task?._id) || [];
 
   const {
     register,
@@ -113,10 +113,10 @@ export default function TaskForm({ task }) {
   // Check for circular dependencies when dependencies change
   useEffect(() => {
     const checkForCircularDependencies = async () => {
-      if (task && selectedDeps.length > 0) {
+      if (task && selectedDeps?.length > 0) {
         try {
           const result = await checkCircularity({
-            taskId: task._id,
+            taskId: task?._id,
             dependencies: selectedDeps,
           }).unwrap();
 
@@ -171,10 +171,10 @@ export default function TaskForm({ task }) {
       data.dependencies = selectedDeps;
 
       // Ensure tenant_id is included
-      data.tenant_id = currentTenantId;
+      data?.tenant_id = currentTenantId;
 
       if (task) {
-        await updateTask({ id: task._id, ...data }).unwrap();
+        await updateTask({ id: task?._id, ...data }).unwrap();
         setNotification({
           show: true,
           message: "Task updated successfully!",
@@ -298,7 +298,7 @@ export default function TaskForm({ task }) {
               </div>
               {task && (
                 <div className="flex items-center bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
-                  ID: {task._id?.substring(0, 8)}...
+                  ID: {task?._id?.substring(0, 8)}...
                 </div>
               )}
             </div>
