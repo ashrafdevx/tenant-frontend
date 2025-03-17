@@ -15,6 +15,9 @@ export default function LoginPage() {
       const data = await loginUser({ email, password }).unwrap();
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      setTimeout(() => {
+        location.reload();
+      }, 100);
       router.push("/tasks");
     } catch (err) {
       console.error("Login failed", err);
