@@ -384,7 +384,7 @@ export default function TaskListPage() {
                             {/* Show Delete Button Only for Admins */}
                             {userRole === "admin" && (
                               <button
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 rounded-full transition-colors"
+                                className="text-red-600 cursor-pointer hover:text-red-700 hover:bg-red-50 p-1 rounded-full transition-colors"
                                 onClick={() => handleDelete(task?._id)}
                                 title="Delete Task"
                               >
@@ -495,7 +495,10 @@ export default function TaskListPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex justify-end space-x-2">
-                                <Link href={`/tasks/${task?._id}`}>
+                                <Link
+                                  href={`/tasks/${task?._id}`}
+                                  className="cursor-pointer"
+                                >
                                   <button className="bg-indigo-50 cursor-pointer text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-md text-xs font-medium">
                                     View
                                   </button>

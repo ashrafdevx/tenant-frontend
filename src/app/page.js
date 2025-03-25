@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DependencyGraph from "./components/DependencyGraph";
 import { useGetTasksQuery } from "./store/taskSlice";
+import Spinner from "./components/Spinner";
 
 export default function Home() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function Home() {
   const { data: tasks, error, isLoading } = useGetTasksQuery();
 
   if (!isAuthenticated) {
-    return <p>Redirecting to login...</p>;
+    return <Spinner />;
   }
 
   return (

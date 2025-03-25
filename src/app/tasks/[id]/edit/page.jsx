@@ -169,7 +169,7 @@ export default function EditTaskPage() {
         {/* Back Button */}
         <button
           onClick={() => router.push("/tasks")}
-          className="flex items-center text-indigo-600 hover:text-indigo-800 mb-6 font-medium"
+          className="flex cursor-pointer items-center text-indigo-600 hover:text-indigo-800 mb-6 font-medium"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Task List
@@ -370,14 +370,14 @@ export default function EditTaskPage() {
               <button
                 type="button"
                 onClick={() => router.push("/tasks")}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                className="px-4 cursor-pointer  py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isUpdating || !isDirty}
-                className={`flex items-center px-6 py-2 rounded-lg text-white ${
+                className={`flex cursor-pointer items-center px-6 py-2 rounded-lg text-white ${
                   isDirty
                     ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
                     : "bg-gray-400"

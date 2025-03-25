@@ -26,7 +26,6 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("user");
-    console.log("token", token);
     if (token) {
       router.push("/tasks");
     }
