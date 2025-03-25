@@ -78,12 +78,6 @@ export default function LoginPage() {
                 >
                   Password
                 </label>
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Forgot password?
-                </a>
               </div>
               <div className="relative">
                 <input
