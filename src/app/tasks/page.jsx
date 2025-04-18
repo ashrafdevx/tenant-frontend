@@ -18,10 +18,6 @@ import {
 export default function TaskListPage() {
   const { data: tasks, error, isLoading, refetch } = useGetTasksQuery();
   const [selectedAssignee, setSelectedAssignee] = useState("");
-  const assignees = [...new Set(tasks.map((task) => task.assignee))];
-  const filteredTasks = selectedAssignee
-    ? tasks.filter((task) => task.assignee === selectedAssignee)
-    : tasks;
 
   const [deleteTask] = useDeleteTaskMutation();
   const [userRole, setUserRole] = useState(null);
