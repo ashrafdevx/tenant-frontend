@@ -10,10 +10,18 @@ export const taskApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ["Task"],
   endpoints: (builder) => ({
     // Fetch all tasks
     getTasks: builder.query({
       query: () => "/",
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ _id }) => ({ type: "Task", id: _id })),
+              { type: "Task", id: "LIST" },
+            ]
+          : [{ type: "Task", id: "LIST" }],
     }),
 
     // Fetch a specific task by ID

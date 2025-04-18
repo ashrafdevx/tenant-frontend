@@ -14,10 +14,9 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import DependencyGraph from "../components/DependencyGraph";
 
 export default function TaskListPage() {
-  const { data: tasks, error, isLoading } = useGetTasksQuery();
+  const { data: tasks, error, isLoading, refetch } = useGetTasksQuery();
   const [deleteTask] = useDeleteTaskMutation();
   const [userRole, setUserRole] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
@@ -46,6 +45,7 @@ export default function TaskListPage() {
     if (confirm("Are you sure you want to delete this task?")) {
       try {
         await deleteTask(id).unwrap();
+        refetch();
         // Use a more elegant toast notification
         showNotification("Task successfully deleted", "success");
       } catch (err) {

@@ -2,35 +2,31 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import {
   useCreateTaskMutation,
   useUpdateTaskMutation,
   useGetTasksQuery,
   useCheckDependencyCircularityMutation,
 } from "../store/taskSlice";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, FileEdit, AlertTriangle, X, Info } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  FileEdit,
+  AlertTriangle,
+  X,
+  Info,
+  Clock,
+  Loader2,
+  CheckCircle,
+  Calendar,
+  LinkIcon,
+} from "lucide-react";
 import { getAuthToken } from "../utils/token";
-
-// Enhanced schema with dependency validation
-const taskSchema = yup.object().shape({
-  title: yup.string().required("Task title is required"),
-  description: yup.string().required("Description is required"),
-  dueDate: yup
-    .date()
-    .min(new Date(), "Due date must be in the future")
-    .required("Due date is required"),
-  assignee: yup.string().required("Assignee is required"),
-  status: yup
-    .string()
-    .oneOf(["pending", "in-progress", "completed"])
-    .default("pending"),
-  dependencies: yup.array(),
-});
+import { taskSchema } from "../schemas/schemas";
 
 export default function TaskForm({ task }) {
   const router = useRouter();
+  const { id } = useParams();
   const {
     data: allTasks,
     isLoading: tasksLoading,
@@ -74,6 +70,7 @@ export default function TaskForm({ task }) {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(taskSchema),
@@ -86,12 +83,13 @@ export default function TaskForm({ task }) {
       dependencies: [],
     },
   });
-
   useEffect(() => {
     if (task) {
+      console.log("task", task);
       setValue("title", task.title);
       setValue("description", task.description);
       setValue("dueDate", new Date(task.dueDate).toISOString().split("T")[0]);
+      // setValue("dueDate", task.dueDate.split("T")[0]);
       setValue("assignee", task.assignee);
       setValue("status", task.status || "pending");
       setValue("dependencies", task.dependencies || []);
@@ -123,20 +121,13 @@ export default function TaskForm({ task }) {
     checkForCircularDependencies();
   }, [selectedDeps, task, checkCircularity]);
 
-  const handleDependencyChange = (depId) => {
-    setSelectedDeps((prev) =>
-      prev.includes(depId)
-        ? prev.filter((id) => id !== depId)
-        : [...prev, depId]
-    );
-  };
-
   // Update when dependencies change
   useEffect(() => {
     setValue("dependencies", selectedDeps);
   }, [selectedDeps, setValue]);
 
   const onSubmit = async (data) => {
+    console.log("OnSubmit", data);
     if (!canEditTask) {
       setNotification({
         show: true,
@@ -157,7 +148,7 @@ export default function TaskForm({ task }) {
 
     try {
       setIsSubmitting(true);
-      data.dependencies = selectedDeps;
+      // data.dependencies = selectedDeps;
 
       // Ensure tenant_id is included
       data.tenant_id = currentTenantId;
@@ -169,7 +160,6 @@ export default function TaskForm({ task }) {
           message: "Task updated successfully!",
           type: "success",
         });
-        TaskRefetch();
       } else {
         await createTask(data).unwrap();
         setNotification({
@@ -177,9 +167,19 @@ export default function TaskForm({ task }) {
           message: "Task created successfully!",
           type: "success",
         });
-        TaskRefetch();
       }
       router.push("/tasks");
+
+      await TaskRefetch();
+      reset({
+        title: "",
+        description: "",
+        dueDate: "",
+        assignee: "",
+        status: "pending",
+        dependencies: [],
+      });
+
       // setTimeout(() => {
       // }, 500);
     } catch (err) {
@@ -231,6 +231,18 @@ export default function TaskForm({ task }) {
     );
   }
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "pending":
+        return <Clock className="w-5 h-5 text-amber-500" />;
+      case "in-progress":
+        return <Loader2 className="w-5 h-5 text-blue-500" />;
+      case "completed":
+        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
+      default:
+        return null;
+    }
+  };
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 min-h-screen py-8 px-4">
       <div className="max-w-3xl mx-auto">
@@ -354,30 +366,44 @@ export default function TaskForm({ task }) {
                     </p>
                   )}
                 </div>
-
                 {task && (
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-medium mb-2">
-                      Status
-                    </label>
-                    <select
-                      {...register("status")}
-                      className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      disabled={isSubmitting}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                    {errors.status && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.status.message}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Changing a task to "completed" will notify users with
-                      dependent tasks
-                    </p>
+                  <div>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-medium mb-2">
+                        Status
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          {getStatusIcon(watch("status"))}
+                        </div>
+                        <select
+                          {...register("status")}
+                          className="border border-gray-300 rounded-lg p-3 pl-10 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg
+                            className="h-5 w-5 text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      {errors.status && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.status?.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -402,73 +428,55 @@ export default function TaskForm({ task }) {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                <div className="mb-4">
+                  <label className="flex items-center text-gray-700 text-sm font-medium mb-2">
+                    <LinkIcon className="w-4 h-4 mr-1" />
                     Dependencies
                   </label>
-
-                  {/* Circular dependency warning */}
-                  {/* Circular dependency warning */}
-                  {circularWarning && (
-                    <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                      <div className="flex items-start">
-                        <AlertTriangle className="w-5 h-5 text-amber-500 mr-2 mt-0.5" />
-                        <div>
-                          <p className="text-amber-700 font-medium text-sm">
-                            Circular Dependency Detected
-                          </p>
-                          <p className="text-amber-600 text-xs mt-1">
-                            {`Circular path: ${circularWarning.join(" → ")}`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 bg-gray-50">
-                    {tasksLoading ? (
-                      <div className="flex justify-center items-center p-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
-                      </div>
-                    ) : availableDependencyTasks?.length > 0 ? (
-                      availableDependencyTasks?.map((t) => (
-                        <div
-                          key={t?._id}
-                          className="flex items-center gap-2 p-2 hover:bg-white rounded-md transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            id={`dep-${t?._id}`}
-                            className="w-4 h-4 accent-indigo-500"
-                            checked={selectedDeps.includes(t?._id)}
-                            onChange={() => handleDependencyChange(t?._id)}
-                            disabled={isSubmitting || t?.status === "completed"}
-                          />
-                          <label
-                            htmlFor={`dep-${t?._id}`}
-                            className={`text-sm cursor-pointer flex-grow ${
-                              t?.status === "completed"
-                                ? "text-gray-400 line-through"
-                                : ""
-                            }`}
+                  <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    {allTasks?.length > 0 ? (
+                      allTasks
+                        .filter((t) => t._id !== id) // Filter out current task
+                        .map((t) => (
+                          <div
+                            key={t._id}
+                            className="flex items-center py-1 hover:bg-gray-50 px-2 rounded"
                           >
-                            {t?.title}
-                            {t?.status === "completed" && " (Completed)"}
-                          </label>
-                        </div>
-                      ))
+                            <input
+                              type="checkbox"
+                              id={`dep-${t._id}`}
+                              {...register("dependencies")}
+                              value={t._id}
+                              defaultChecked={watch("dependencies")?.includes(
+                                t._id
+                              )}
+                              className="mr-2 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                            <label
+                              htmlFor={`dep-${t._id}`}
+                              className="text-sm text-gray-700 cursor-pointer flex-grow"
+                            >
+                              {t.title}
+                            </label>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                t.status === "pending"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : t.status === "in-progress"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-emerald-100 text-emerald-800"
+                              }`}
+                            >
+                              {t.status}
+                            </span>
+                          </div>
+                        ))
                     ) : (
-                      <p className="text-gray-500 text-sm p-2">
-                        No available tasks for dependencies
+                      <p className="text-gray-500 text-sm py-2">
+                        No other tasks available to select as dependencies.
                       </p>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Select tasks that must be completed before this one
-                  </p>
-                  <p className="text-xs text-indigo-600 mt-1">
-                    Tasks from your tenant only
-                  </p>
                 </div>
               </div>
             </div>
@@ -516,7 +524,7 @@ export default function TaskForm({ task }) {
                       {task ? "Updating..." : "Creating..."}
                     </div>
                   ) : (
-                    <>{task ? "Save Changes" : "Create Task"}</>
+                    <>{task ? "Update Task" : "Create Task"}</>
                   )}
                 </button>
               </div>
