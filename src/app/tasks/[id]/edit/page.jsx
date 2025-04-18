@@ -30,7 +30,7 @@ const taskSchema = yup.object().shape({
     .oneOf(["pending", "in-progress", "completed"], "Invalid status"),
   dueDate: yup
     .date()
-    .min(new Date(), "Due date must be in the future")
+    // .min(new Date(), "Due date must be in the future")
     .required("Due date is required"),
   assignee: yup.string().required("Assignee is required"),
   dependencies: yup.array().of(yup.string()),
