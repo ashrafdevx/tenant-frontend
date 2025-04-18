@@ -17,6 +17,12 @@ import {
 
 export default function TaskListPage() {
   const { data: tasks, error, isLoading, refetch } = useGetTasksQuery();
+  const [selectedAssignee, setSelectedAssignee] = useState("");
+  const assignees = [...new Set(tasks.map((task) => task.assignee))];
+  const filteredTasks = selectedAssignee
+    ? tasks.filter((task) => task.assignee === selectedAssignee)
+    : tasks;
+
   const [deleteTask] = useDeleteTaskMutation();
   const [userRole, setUserRole] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
@@ -185,6 +191,28 @@ export default function TaskListPage() {
               </p>
             </div>
             <div className="flex space-x-3">
+              <div className="flex items-center space-x-4">
+                <label
+                  htmlFor="assigneeFilter"
+                  className="text-gray-700 font-medium"
+                >
+                  Filter by Assignee:
+                </label>
+                <select
+                  id="assigneeFilter"
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                >
+                  <option value="">All</option>
+                  {/* {assignees.map((assignee) => (
+                    <option key={assignee} value={assignee}>
+                      {assignee}
+                    </option> */}
+                  {/* ))} */}
+                </select>
+              </div>
+
               <button
                 className={`px-3 py-2 cursor-pointer rounded-md ${
                   viewMode === "grid"
